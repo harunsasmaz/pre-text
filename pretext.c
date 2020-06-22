@@ -70,7 +70,6 @@ void init_editor()
         die("init editor");
 }
 
-
 void append_row(char *s, size_t len) {
 
     E.row = realloc(E.row, sizeof(erow) * (E.numrows + 1));
