@@ -1,4 +1,5 @@
 #include "struct.h"
+#include <unistd.h>
 
 void die(const char*);
 
@@ -19,3 +20,6 @@ void abAppend(struct abuf*, const char*, int);
 void abFree(struct abuf*);
 
 void move_cursor(int);
+
+void editor_open(char*);
+void append_row(char*, size_t);
