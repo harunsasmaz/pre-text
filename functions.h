@@ -23,7 +23,7 @@ void abFree(struct abuf*);
 void move_cursor(int);
 
 void editor_open(char*);
-void append_row(char*, size_t);
+void insert_row(int,char*, size_t);
 void update_row(erow*);
 int row_cx_to_rx(erow*, int);
 
