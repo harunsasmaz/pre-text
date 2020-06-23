@@ -23,3 +23,5 @@ void move_cursor(int);
 
 void editor_open(char*);
 void append_row(char*, size_t);
+
+void scroll();
