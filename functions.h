@@ -1,5 +1,6 @@
 #include "struct.h"
 #include <unistd.h>
+#include <stdarg.h>
 
 void die(const char*);
 
@@ -27,3 +28,5 @@ void update_row(erow*);
 int row_cx_to_rx(erow*, int);
 
 void scroll();
+void draw_status_bar(struct abuf*);
+void set_status_msg(const char*, ...);

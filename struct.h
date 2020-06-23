@@ -1,4 +1,5 @@
 #include <termios.h>
+#include <time.h>
 
 struct abuf {
     char *b;
@@ -21,5 +22,8 @@ struct config {
     int screen_cols;
     int numrows;
     erow* row;
+    char* filename;
+    char* status_msg;
+    time_t statusmsg_time;
     struct termios orig_termios;
 };

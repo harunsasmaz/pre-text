@@ -28,6 +28,36 @@ enum editorKey {
 
 struct config E;
 
+void set_status_message(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vsnprintf(E.status_msg, sizeof(E.status_msg), fmt, ap);
+    va_end(ap);
+    E.statusmsg_time = time(NULL);
+}
+
+void draw_status_bar(struct abuf *ab)
+{
+    abAppend(ab, "\x1b[7m", 4);
+    char status[80], rstatus[80];
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines",
+    E.filename ? E.filename : "[No Name]", E.numrows);
+    int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
+    E.cy + 1, E.numrows);
+    if (len > E.screen_cols) len = E.screen_cols;
+    abAppend(ab, status, len);
+    while (len < E.screen_cols) {
+        if (E.screen_cols - len == rlen) {
+            abAppend(ab, rstatus, rlen);
+            break;
+        } else {
+            abAppend(ab, " ", 1);
+            len++;
+        }
+    }
+    abAppend(ab, "\x1b[m", 3);
+}
+
 int row_cx_to_rx(erow *row, int cx)
 {
     int rx = 0;
@@ -101,8 +131,12 @@ void init_editor()
     E.numrows = 0;
     E.rx = 0;
     E.row = NULL;
+    E.filename = NULL;
+    E.status_msg[0] = '\0';
+    E.statusmsg_time = 0;
     if(get_window_size(&E.screen_rows, &E.screen_cols) == -1)
         die("init editor");
+    E.screen_rows--;
 }
 
 void append_row(char *s, size_t len) {
@@ -147,6 +181,9 @@ void update_row(erow* row)
 }
 
 void editor_open(char *filename) {
+    free(E.filename);
+    E.filename = strdup(filename);
+
     FILE *fp = fopen(filename, "r");
     if (!fp) die("editor open");
 
@@ -190,9 +227,7 @@ void draw_rows(struct abuf* ab) {
             abAppend(ab, &E.row[filerow].render[E.coloff], len);
         }
         abAppend(ab, "\x1b[K", 3);
-        if (y < E.screen_rows - 1) {
-            abAppend(ab, "\r\n", 2);
-        }
+        abAppend(ab, "\r\n", 2);
     }
 }
 
@@ -338,6 +373,7 @@ void refresh_screen()
     abAppend(&ab, "\x1b[H", 3);
 
     draw_rows(&ab);
+    draw_status_bar(&ab);
 
     char buf[32];
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1,
@@ -391,6 +427,8 @@ int main(int argc, char* argv[])
     enable_raw_mode();
     init_editor();
     if(argc >= 2) editor_open(argv[1]);
+
+    set_status_message("HELP: Ctrl-Q = quit");
 
     while(1)
     {
