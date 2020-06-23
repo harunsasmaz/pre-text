@@ -18,6 +18,7 @@
 
 #define PRETEXT_VERSION "0.0.1"
 #define TAB_STOP 8
+#define QUIT_TIMES 3
 #define CTRL_KEY(k) ((k) & 0x1f)
 #define ABUF_INIT {NULL, 0}
 
@@ -460,7 +461,9 @@ void move_cursor(int key) {
 }
 
 void handle_key_press()
-{
+{   
+    static int quit_times = QUIT_TIMES;
+
     int c = read_key();
     switch (c) {
         case '\r':
@@ -468,6 +471,12 @@ void handle_key_press()
             break;
 
         case CTRL_KEY('q'):
+            if (E.dirty && quit_times > 0) {
+                set_status_msg("WARNING!!! File has unsaved changes. "
+                    "Press Ctrl-Q %d more times to quit.", quit_times);
+                quit_times--;
+                return;
+            }
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
@@ -519,6 +528,8 @@ void handle_key_press()
             editor_insert_char(c);
             break;
     }
+
+    quit_times = QUIT_TIMES;
 }
 
 // =================================================
