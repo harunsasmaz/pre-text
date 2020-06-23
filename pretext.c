@@ -202,6 +202,7 @@ void append_row(char *s, size_t len) {
     update_row(&E.row[at]);
 
     E.numrows++;
+    E.dirty++;
 }
 
 void insert_char_row(erow* row, int at, int c)
@@ -212,6 +213,7 @@ void insert_char_row(erow* row, int at, int c)
     row->size++;
     row->chars[at] = c;
     update_row(row);
+    E.dirty++;
 }
 
 
@@ -254,6 +256,7 @@ void editor_open(char *filename) {
     }
     free(line);
     fclose(fp);
+    E.dirty = 0;
 }
 
 void editor_insert_char(int c)
@@ -278,6 +281,7 @@ void editor_save()
             if (write(fd, buf, len) == len) {
                 close(fd);
                 free(buf);
+                E.dirty = 0;
                 set_status_msg("%d bytes written to disk", len);
                 return;
             }
@@ -359,8 +363,9 @@ void draw_status_bar(struct abuf *ab)
 {
     abAppend(ab, "\x1b[7m", 4);
     char status[80], rstatus[80];
-    int len = snprintf(status, sizeof(status), "%.20s - %d lines",
-        E.filename ? E.filename : "[No Name]", E.numrows);
+    int len = snprintf(status, sizeof(status), "%.20s - %d lines %s",
+        E.filename ? E.filename : "[No Name]", E.numrows,
+    E.dirty ? "(modified)" : "");
     int rlen = snprintf(rstatus, sizeof(rstatus), "%d/%d",
         E.cy + 1, E.numrows);
     if (len > E.screen_cols) len = E.screen_cols;
@@ -526,6 +531,7 @@ void init_editor()
     E.coloff = 0;
     E.numrows = 0;
     E.rx = 0;
+    E.dirty = 0;
     E.row = NULL;
     E.filename = NULL;
     E.status_msg[0] = '\0';

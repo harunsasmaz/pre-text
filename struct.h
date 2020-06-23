@@ -16,6 +16,7 @@ typedef struct erow{
 struct config {
     int cx,cy;
     int rx;
+    int dirty;
     int rowoff;
     int coloff;
     int screen_rows;
