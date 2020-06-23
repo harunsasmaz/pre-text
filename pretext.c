@@ -217,6 +217,39 @@ void insert_char_row(erow* row, int at, int c)
     E.dirty++;
 }
 
+void del_char_row(erow* row, int at)
+{
+    if(at < 0 || at >= row->size) return;
+    memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
+    row->size--;
+    update_row(row);
+    E.dirty++;
+}
+
+void free_row(erow* row)
+{
+    free(row->chars);
+    free(row->render);
+}
+
+void delete_row(int at)
+{
+    if (at < 0 || at >= E.numrows) return;
+    free_row(&E.row[at]);
+    memmove(&E.row[at], &E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
+    E.numrows--;
+    E.dirty++;
+}
+
+void row_append_string(erow* row, char* s, size_t len)
+{
+    row->chars = realloc(row->chars, row->size + len + 1);
+    memcpy(&row->chars[row->size], s, len);
+    row->size += len;
+    row->chars[row->size] = '\0';
+    update_row(row);
+    E.dirty++;
+}
 
 // ===============================================
 
@@ -267,6 +300,24 @@ void editor_insert_char(int c)
     }
     insert_char_row(&E.row[E.cy], E.cx, c);
     E.cx++;
+}
+
+void editor_del_char()
+{
+    if(E.cy == E.numrows) return;
+    if (E.cx == 0 && E.cy == 0) return;
+
+    erow* row = &E.row[E.cy];
+    if(E.cx > 0)
+    {
+        del_char_row(row, E.cx - 1);
+        E.cx--;
+    } else {
+        E.cx = E.row[E.cy - 1].size;
+        row_append_string(&E.row[E.cy - 1], row->chars, row->size);
+        delete_row(E.cy);
+        E.cy--;
+    }
 }
 
 void editor_save()
@@ -497,7 +548,8 @@ void handle_key_press()
         case BACKSPACE:
         case CTRL_KEY('h'):
         case DEL_KEY:
-            /* TODO */
+            if (c == DEL_KEY) move_cursor(ARROW_RIGHT);
+            editor_del_char();
             break;
         case PAGE_UP:
         case PAGE_DOWN:
