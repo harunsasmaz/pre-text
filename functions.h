@@ -16,6 +16,7 @@ int read_key();
 void handle_key_press();
 
 void refresh_screen();
+char* prompt(char*);
 
 void abAppend(struct abuf*, const char*, int);
 void abFree(struct abuf*);
