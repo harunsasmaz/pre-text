@@ -7,7 +7,7 @@ void die(const char*);
 int get_window_size(int*, int*);
 void init_editor();
 void draw_rows(struct abuf*);
-int getCursorPosition(int*, int*);
+int get_cursor_position(int*, int*);
 
 void disable_raw_mode();
 void enable_raw_mode();

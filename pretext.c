@@ -2,9 +2,10 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
-#include "struct.h"
+#include "functions.h"
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
@@ -17,10 +18,11 @@
 
 #define PRETEXT_VERSION "0.0.1"
 #define TAB_STOP 8
-#define C_KEY(k) ((k) & 0x1f)
+#define CTRL_KEY(k) ((k) & 0x1f)
 #define ABUF_INIT {NULL, 0}
 
 enum editorKey {
+    BACKSPACE = 127,
     ARROW_LEFT = 1000,
     ARROW_RIGHT,
     ARROW_UP,
@@ -202,7 +204,37 @@ void append_row(char *s, size_t len) {
     E.numrows++;
 }
 
+void insert_char_row(erow* row, int at, int c)
+{
+    if(at < 0 || at > row->size) at = row->size;
+    row->chars = realloc(row->chars, row->size + 2);
+    memmove(&row->chars[at + 1], &row->chars[at], row->size - at + 1);
+    row->size++;
+    row->chars[at] = c;
+    update_row(row);
+}
+
+
 // ===============================================
+
+char* row_to_string(int* buflen)
+{
+    int total_len = 0;
+    for(int i = 0; i < E.numrows; ++i)
+        total_len += E.row[i].size + 1;
+    *buflen = total_len;
+
+    char* buf = malloc(total_len);
+    char* p = buf;
+    for(int i = 0; i < E.numrows; ++i)
+    {
+        memcpy(p, E.row[i].chars, E.row[i].size);
+        p += E.row[i].size;
+        *p = '\n';
+        p++;
+    }
+    return buf;
+}
 
 void editor_open(char *filename) {
     free(E.filename);
@@ -222,6 +254,38 @@ void editor_open(char *filename) {
     }
     free(line);
     fclose(fp);
+}
+
+void editor_insert_char(int c)
+{
+    if (E.cy == E.numrows) {
+        append_row("", 0);
+    }
+    insert_char_row(&E.row[E.cy], E.cx, c);
+    E.cx++;
+}
+
+void editor_save()
+{
+    if(E.filename == NULL) return;
+
+    int len;
+    char* buf = row_to_string(&len);
+
+    int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+    if(fd != -1) {
+        if (ftruncate(fd, len) != -1) {
+            if (write(fd, buf, len) == len) {
+                close(fd);
+                free(buf);
+                set_status_msg("%d bytes written to disk", len);
+                return;
+            }
+        }
+        close(fd);
+    }
+    free(buf);
+    set_status_msg("Can't save! I/O error: %s", strerror(errno));
 }
 
 // ===============================================
@@ -344,7 +408,7 @@ void refresh_screen()
     abFree(&ab);
 }
 
-void set_status_message(const char *fmt, ...) {
+void set_status_msg(const char *fmt, ...) {
     va_list ap;
     va_start(ap, fmt);
     vsnprintf(E.status_msg, sizeof(E.status_msg), fmt, ap);
@@ -394,10 +458,18 @@ void handle_key_press()
 {
     int c = read_key();
     switch (c) {
-        case C_KEY('q'):
+        case '\r':
+            //TODO
+            break;
+
+        case CTRL_KEY('q'):
             write(STDOUT_FILENO, "\x1b[2J", 4);
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
+            break;
+        
+        case CTRL_KEY('s'):
+            editor_save();
             break;
         
         case HOME_KEY:
@@ -406,6 +478,12 @@ void handle_key_press()
         case END_KEY:
             if(E.cy < E.numrows)
                 E.cx = E.row[E.cy].size;
+            break;
+        
+        case BACKSPACE:
+        case CTRL_KEY('h'):
+        case DEL_KEY:
+            /* TODO */
             break;
         case PAGE_UP:
         case PAGE_DOWN:
@@ -427,6 +505,13 @@ void handle_key_press()
         case ARROW_LEFT:
         case ARROW_RIGHT:
             move_cursor(c);
+            break;
+
+        case CTRL_KEY('l'):
+        case '\x1b':
+            break;
+        default:
+            editor_insert_char(c);
             break;
     }
 }
@@ -456,7 +541,7 @@ int main(int argc, char* argv[])
     init_editor();
     if(argc >= 2) editor_open(argv[1]);
 
-    set_status_message("HELP: Ctrl-Q = quit");
+    set_status_msg("HELP: Ctrl-S = save | Ctrl-Q = quit");
 
     while(1)
     {
