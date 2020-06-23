@@ -1,3 +1,7 @@
+#define _DEFAULT_SOURCE
+#define _BSD_SOURCE
+#define _GNU_SOURCE
+
 #include "functions.h"
 #include <ctype.h>
 #include <errno.h>
@@ -56,6 +60,15 @@ void draw_status_bar(struct abuf *ab)
         }
     }
     abAppend(ab, "\x1b[m", 3);
+    abAppend(ab, "\r\n", 2);
+}
+
+void draw_message_bar(struct abuf *ab) {
+    abAppend(ab, "\x1b[K", 3);
+    int msglen = strlen(E.status_msg);
+    if (msglen > E.screen_cols) msglen = E.screen_cols;
+    if (msglen && time(NULL) - E.statusmsg_time < 5)
+        abAppend(ab, E.status_msg, msglen);
 }
 
 int row_cx_to_rx(erow *row, int cx)
@@ -136,7 +149,7 @@ void init_editor()
     E.statusmsg_time = 0;
     if(get_window_size(&E.screen_rows, &E.screen_cols) == -1)
         die("init editor");
-    E.screen_rows--;
+    E.screen_rows -= 2;
 }
 
 void append_row(char *s, size_t len) {
@@ -374,6 +387,7 @@ void refresh_screen()
 
     draw_rows(&ab);
     draw_status_bar(&ab);
+    draw_message_bar(&ab);
 
     char buf[32];
     snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1,

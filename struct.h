@@ -23,7 +23,7 @@ struct config {
     int numrows;
     erow* row;
     char* filename;
-    char* status_msg;
+    char status_msg[100];
     time_t statusmsg_time;
     struct termios orig_termios;
 };
