@@ -38,6 +38,7 @@ enum editorKey {
 enum editorHighlight {
     NORMAL = 0,
     NUMBER,
+    MATCH
 };
 
 struct config E;
@@ -170,6 +171,7 @@ int syntax_to_color(int hl)
     switch (hl)
     {
         case NUMBER: return 31;
+        case MATCH : return 34;
         default: return 37;
     }
 }
@@ -441,6 +443,8 @@ void editor_find_callback(char* query, int key)
             E.cy = current;
             E.cx = row_rx_to_cx(row, match - row->render);
             E.rowoff = E.numrows;
+
+            memset(&row->hl[match - row->render], MATCH, strlen(query));
             break;
         }
     }
