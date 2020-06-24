@@ -6,12 +6,14 @@ struct abuf {
     int len;
 };
 
-typedef struct erow{
+typedef struct erow {
+    int idx;
     int size;
     int rsize;
     char* chars;
     char* render;
     unsigned char* hl;
+    int open_comment;
 }erow;
 
 struct editor_syntax {
@@ -19,6 +21,8 @@ struct editor_syntax {
     char** filematch;
     char** keywords;
     char* singleline_comment_start;
+    char *multiline_comment_start;
+    char *multiline_comment_end;
     int flags;
 };
 
