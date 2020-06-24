@@ -26,10 +26,18 @@
 
 char* extensions[] = {".c", ".h", ".cpp", NULL};
 
+char *keywords[] = {
+  "switch", "if", "while", "for", "break", "continue", "return", "else",
+  "struct", "union", "typedef", "static", "enum", "class", "case",
+  "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
+  "void|", NULL
+};
+
 struct editor_syntax HLDB[] = {
     {
         "c",
         extensions,
+        keywords,
         "//",
         HIGHLIGHT_NUMBERS | HIGHLIGHT_STRINGS
     },
@@ -53,6 +61,8 @@ enum editorKey {
 enum editorHighlight {
     NORMAL = 0,
     COMMENT,
+    KEYWORD1,
+    KEYWORD2,
     STRING,
     NUMBER,
     MATCH
@@ -185,12 +195,13 @@ void update_syntax(erow* row)
 
     if(E.syntax == NULL) return;
 
+    char **keywords = E.syntax->keywords;
     char *scs = E.syntax->singleline_comment_start;
     int scs_len = scs ? strlen(scs) : 0;
-
     
     int prev_sep = 1;
     int in_string = 0;
+
     int i = 0;
     while (i < row->rsize) {
         char c = row->render[i];
@@ -238,6 +249,25 @@ void update_syntax(erow* row)
                 continue;
             }
         }
+
+        if (prev_sep) {
+            int j;
+            for (j = 0; keywords[j]; j++) {
+                int klen = strlen(keywords[j]);
+                int kw2 = keywords[j][klen - 1] == '|';
+                if (kw2) klen--;
+                if (!strncmp(&row->render[i], keywords[j], klen) &&
+                    is_separator(row->render[i + klen])) {
+                    memset(&row->hl[i], kw2 ? KEYWORD2 : KEYWORD1, klen);
+                    i += klen;
+                    break;
+                }
+            }
+            if (keywords[j] != NULL) {
+                prev_sep = 0;
+                continue;
+            }
+        }
         prev_sep = is_separator(c);
         i++;
     }
@@ -248,6 +278,8 @@ int syntax_to_color(int hl)
     switch (hl)
     {
         case NUMBER: return 31;
+        case KEYWORD2: return 32;
+        case KEYWORD1: return 33;
         case MATCH : return 34;
         case STRING: return 35;
         case COMMENT: return 36;
