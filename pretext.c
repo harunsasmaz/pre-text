@@ -47,7 +47,7 @@ struct editor_syntax HLDB[] = {
 
 #define HLDB_ENTRIES (sizeof(HLDB)/ sizeof(HLDB[0]))
 
-enum editorKey {
+enum editor_key {
     BACKSPACE = 127,
     ARROW_LEFT = 1000,
     ARROW_RIGHT,
