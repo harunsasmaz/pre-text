@@ -35,6 +35,11 @@ enum editorKey {
     PAGE_DOWN
 };
 
+enum editorHighlight {
+    NORMAL = 0,
+    NUMBER,
+};
+
 struct config E;
 
 // ===============================================
@@ -151,6 +156,24 @@ int get_window_size(int* rows, int* cols)
     }
 }
 
+void update_syntax(erow* row)
+{
+    row->hl = realloc(row->hl, row->rsize);
+    memset(row->hl, NORMAL, row->rsize);
+    int i;
+    for (i = 0; i < row->rsize; i++)
+        if (isdigit(row->render[i])) row->hl[i] = NUMBER;
+}
+
+int syntax_to_color(int hl)
+{
+    switch (hl)
+    {
+        case NUMBER: return 31;
+        default: return 37;
+    }
+}
+
 // ===============================================
 
 int row_cx_to_rx(erow *row, int cx)
@@ -197,6 +220,8 @@ void update_row(erow* row)
     }
     row->render[idx] = '\0';
     row->rsize = idx;
+
+    update_syntax(row);
 }
 
 void insert_row(int at, char *s, size_t len) {
@@ -214,6 +239,7 @@ void insert_row(int at, char *s, size_t len) {
 
     E.row[at].rsize = 0;
     E.row[at].render = NULL;
+    E.row[at].hl = NULL;
     update_row(&E.row[at]);
 
     E.numrows++;
@@ -244,6 +270,7 @@ void free_row(erow* row)
 {
     free(row->chars);
     free(row->render);
+    free(row->hl);
 }
 
 void delete_row(int at)
@@ -497,7 +524,28 @@ void draw_rows(struct abuf* ab) {
             int len = E.row[filerow].rsize - E.coloff;
             if (len < 0) len = 0;
             if (len > E.screen_cols) len = E.screen_cols;
-            abAppend(ab, &E.row[filerow].render[E.coloff], len);
+            char *c = &E.row[filerow].render[E.coloff];
+            unsigned char *hl = &E.row[filerow].hl[E.coloff];
+            int current_color = -1;
+            for (int j = 0; j < len; j++) {
+                if (hl[j] == NORMAL) {
+                    if (current_color != -1) {
+                        abAppend(ab, "\x1b[39m", 5);
+                        current_color = -1;
+                    }
+                    abAppend(ab, &c[j], 1);
+                } else {
+                    int color = syntax_to_color(hl[j]);
+                    if (color != current_color) {
+                        current_color = color;
+                        char buf[16];
+                        int clen = snprintf(buf, sizeof(buf), "\x1b[%dm", color);
+                        abAppend(ab, buf, clen);
+                    }
+                    abAppend(ab, &c[j], 1);
+                }
+            }
+            abAppend(ab, "\x1b[39m", 5);
         }
         abAppend(ab, "\x1b[K", 3);
         abAppend(ab, "\r\n", 2);
