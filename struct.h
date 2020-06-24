@@ -14,6 +14,12 @@ typedef struct erow{
     unsigned char* hl;
 }erow;
 
+struct editor_syntax {
+    char* filetype;
+    char** filematch;
+    int flags;
+};
+
 struct config {
     int cx,cy;
     int rx;
@@ -27,5 +33,7 @@ struct config {
     char* filename;
     char status_msg[100];
     time_t statusmsg_time;
+    struct editor_syntax *syntax;
     struct termios orig_termios;
 };
+
