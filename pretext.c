@@ -157,13 +157,29 @@ int get_window_size(int* rows, int* cols)
     }
 }
 
+int is_separator(int c) {
+    return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+}
+
 void update_syntax(erow* row)
 {
     row->hl = realloc(row->hl, row->rsize);
     memset(row->hl, NORMAL, row->rsize);
-    int i;
-    for (i = 0; i < row->rsize; i++)
-        if (isdigit(row->render[i])) row->hl[i] = NUMBER;
+    int prev_sep = 1;
+    int i = 0;
+    while (i < row->rsize) {
+        char c = row->render[i];
+        unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : NORMAL;
+        if ((isdigit(c) && (prev_sep || prev_hl == NUMBER)) ||
+            (c == '.' && prev_hl == NUMBER)) {
+            row->hl[i] = NUMBER;
+            i++;
+            prev_sep = 0;
+            continue;
+        }
+        prev_sep = is_separator(c);
+        i++;
+    }
 }
 
 int syntax_to_color(int hl)
