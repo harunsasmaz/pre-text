@@ -30,6 +30,7 @@ struct editor_syntax HLDB[] = {
     {
         "c",
         extensions,
+        "//",
         HIGHLIGHT_NUMBERS | HIGHLIGHT_STRINGS
     },
 };
@@ -51,6 +52,7 @@ enum editorKey {
 
 enum editorHighlight {
     NORMAL = 0,
+    COMMENT,
     STRING,
     NUMBER,
     MATCH
@@ -182,6 +184,10 @@ void update_syntax(erow* row)
     memset(row->hl, NORMAL, row->rsize);
 
     if(E.syntax == NULL) return;
+
+    char *scs = E.syntax->singleline_comment_start;
+    int scs_len = scs ? strlen(scs) : 0;
+
     
     int prev_sep = 1;
     int in_string = 0;
@@ -189,6 +195,13 @@ void update_syntax(erow* row)
     while (i < row->rsize) {
         char c = row->render[i];
         unsigned char prev_hl = (i > 0) ? row->hl[i - 1] : NORMAL;
+
+        if (scs_len && !in_string) {
+            if (!strncmp(&row->render[i], scs, scs_len)) {
+                memset(&row->hl[i], COMMENT, row->rsize - i);
+                break;
+            }
+        }
 
         if (E.syntax->flags & HIGHLIGHT_STRINGS) {
             if (in_string) {
@@ -206,7 +219,7 @@ void update_syntax(erow* row)
                 continue;
 
             } else {
-                
+
                 if (c == '"' || c == '\'') {
                     in_string = c;
                     row->hl[i] = STRING;
@@ -235,8 +248,9 @@ int syntax_to_color(int hl)
     switch (hl)
     {
         case NUMBER: return 31;
-        case STRING: return 35;
         case MATCH : return 34;
+        case STRING: return 35;
+        case COMMENT: return 36;
         default: return 37;
     }
 }
