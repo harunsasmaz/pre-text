@@ -158,7 +158,7 @@ int get_window_size(int* rows, int* cols)
 }
 
 int is_separator(int c) {
-    return isspace(c) || c == '\0' || strchr(",.()+-/*=~%<>[];", c) != NULL;
+    return isspace(c) || c == '\0' || strchr("\",.()+-/*=~%<>[];", c) != NULL;
 }
 
 void update_syntax(erow* row)
