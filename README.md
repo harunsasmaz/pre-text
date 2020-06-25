@@ -32,14 +32,14 @@ Or with an existing file:
 
 ## Supported Functionalities
 
-Save / Save as
+<b>Save / Save as</b>
 
 > You can use <kbd>CTRL</kbd> + <kbd>S</kbd> to save your modifications.
 
 > <b>Note that</b> if you are editing a new file, prompt will want you to enter a file name to save.
 
 
-Find
+<b>Find</b>
 
 > You can use <kbd>CTRL</kbd> + <kbd>F</kbd> to do incremental search in the file.
 
@@ -47,7 +47,7 @@ Find
 
 > If you are not familiar with incremental search, visit [here](https://en.wikipedia.org/wiki/Incremental_search#:~:text=In%20computing%2C%20incremental%20search%2C%20incremental,immediately%20presented%20to%20the%20user.)
 
-Syntax Highlight:
+<b>Syntax Highlight</b>
 
 > Pretext supports a basic syntax highlighting in .c, .h and .cpp files. You can notice that strings, numbers and keywords are highlighted in a really simple manner.
 
@@ -55,13 +55,13 @@ Syntax Highlight:
 
 > Also, search results are highlighted.
 
-Quit
+<b>Quit</b>
 
 > Another keyboard shortcut that is enabled in Pretext is <kbd>CTRL</kbd> + <kbd>Q</kbd> combination. So you can quit from a file as long as all modifications are saved or there is no modification.
 
 > If you do modifications in the file and try to quit, Pretext prompts you a notification message to warn you that you have unsaved modifications. You can either press <kbd>CTRL</kbd> + <kbd>F</kbd> three times to quit without saving or save the modifications and quit at once.
 
-File Information
+<b>File Information</b>
 
 > Pretext shows you the total lines and bytes in file and if you have modifications, then it shows you how many bytes are modified.
 
