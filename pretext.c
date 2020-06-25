@@ -34,33 +34,9 @@ struct editor_syntax HLDB[] = {
 
 #define HLDB_ENTRIES (sizeof(HLDB)/ sizeof(HLDB[0]))
 
-enum editor_key {
-    BACKSPACE = 127,
-    ARROW_LEFT = 1000,
-    ARROW_RIGHT,
-    ARROW_UP,
-    ARROW_DOWN,
-    DEL_KEY,
-    HOME_KEY,
-    END_KEY,
-    PAGE_UP,
-    PAGE_DOWN
-};
-
-enum editor_highlight {
-    NORMAL = 0,
-    COMMENT,
-    ML_COMMENT,
-    KEYWORD1,
-    KEYWORD2,
-    STRING,
-    NUMBER,
-    MATCH
-};
-
 struct config E;
 
-// ===============================================
+// =================  TERMINAL HANDLE  =====================
 
 void die(const char* s)
 {
@@ -174,7 +150,7 @@ int get_window_size(int* rows, int* cols)
     }
 }
 
-// ===============================================
+// ==================  SYNTAX HIGHLIGHT  =====================
 
 int is_separator(int c) {
     return isspace(c) || c == '\0' || strchr("\",.()+-/*=~%<>[];", c) != NULL;
@@ -338,7 +314,7 @@ void select_syntax_highlight() {
     }
 }
 
-// ===============================================
+// ==================   ROW OPERATIONS   =====================
 
 int row_cx_to_rx(erow *row, int cx)
 {
@@ -466,8 +442,6 @@ void row_append_string(erow* row, char* s, size_t len)
     E.dirty++;
 }
 
-// ===============================================
-
 char* row_to_string(int* buflen)
 {
     int total_len = 0;
@@ -486,6 +460,8 @@ char* row_to_string(int* buflen)
     }
     return buf;
 }
+
+// =======================   EDITOR   ===========================
 
 void editor_open(char *filename) {
     free(E.filename);
@@ -656,7 +632,7 @@ void editor_find()
     }
 }
 
-// ===============================================
+// =====================  TERMINAL UPDATE  ======================
 
 void abAppend(struct abuf *ab, const char *s, int len) {
     char *new = realloc(ab->b, ab->len + len);
@@ -668,28 +644,6 @@ void abAppend(struct abuf *ab, const char *s, int len) {
 
 void abFree(struct abuf *ab) {
     free(ab->b);
-}
-
-// ================================================
-
-void scroll()
-{   
-    E.rx = 0;
-    if (E.cy < E.numrows) {
-        E.rx = row_cx_to_rx(&E.row[E.cy], E.cx);
-    }
-    if (E.cy < E.rowoff) {
-        E.rowoff = E.cy;
-    }
-    if (E.cy >= E.rowoff + E.screen_rows) {
-        E.rowoff = E.cy - E.screen_rows + 1;
-    }
-    if (E.rx < E.coloff) {
-        E.coloff = E.rx;
-    }
-    if (E.rx >= E.coloff + E.screen_cols) {
-        E.coloff = E.rx - E.screen_cols + 1;
-    }
 }
 
 void draw_rows(struct abuf* ab) {
@@ -821,8 +775,6 @@ void set_status_msg(const char *fmt, ...) {
     E.statusmsg_time = time(NULL);
 }
 
-// =================================================
-
 char* prompt(char *prompt, void (*callback)(char *, int)) {
     size_t bufsize = 128;
     char *buf = malloc(bufsize);
@@ -856,6 +808,28 @@ char* prompt(char *prompt, void (*callback)(char *, int)) {
         }
     
         if(callback) callback(buf,c);
+    }
+}
+
+// =======================   USER HANDLE  =======================
+
+void scroll()
+{   
+    E.rx = 0;
+    if (E.cy < E.numrows) {
+        E.rx = row_cx_to_rx(&E.row[E.cy], E.cx);
+    }
+    if (E.cy < E.rowoff) {
+        E.rowoff = E.cy;
+    }
+    if (E.cy >= E.rowoff + E.screen_rows) {
+        E.rowoff = E.cy - E.screen_rows + 1;
+    }
+    if (E.rx < E.coloff) {
+        E.coloff = E.rx;
+    }
+    if (E.rx >= E.coloff + E.screen_cols) {
+        E.coloff = E.rx - E.screen_cols + 1;
     }
 }
 
