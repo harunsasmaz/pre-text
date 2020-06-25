@@ -2,27 +2,14 @@
 #define _BSD_SOURCE
 #define _GNU_SOURCE
 
-#include "functions.h"
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <termios.h>
-#include <time.h>
-#include <unistd.h>
+#include "editor.h"
+#include "row_operations.h"
+#include "terminal_handle.h"
+#include "terminal_update.h"
+#include "user_handle.h"
+#include "modules.h"
 
-#define PRETEXT_VERSION "0.0.1"
-#define TAB_STOP 8
-#define QUIT_TIMES 3
-#define HIGHLIGHT_NUMBERS (1<<0)
-#define HIGHLIGHT_STRINGS (1<<1)
-#define CTRL_KEY(k) ((k) & 0x1f)
-#define ABUF_INIT {NULL, 0}
+// ===============================================
 
 char* extensions[] = {".c", ".h", ".cpp", NULL};
 
@@ -30,7 +17,7 @@ char *keywords[] = {
   "switch", "if", "while", "for", "break", "continue", "return", "else",
   "struct", "union", "typedef", "static", "enum", "class", "case",
   "int|", "long|", "double|", "float|", "char|", "unsigned|", "signed|",
-  "void|", NULL
+  "void|", "#include", "#define", NULL
 };
 
 struct editor_syntax HLDB[] = {
@@ -186,6 +173,8 @@ int get_window_size(int* rows, int* cols)
         return 0;
     }
 }
+
+// ===============================================
 
 int is_separator(int c) {
     return isspace(c) || c == '\0' || strchr("\",.()+-/*=~%<>[];", c) != NULL;
