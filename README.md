@@ -4,7 +4,7 @@ A Vim-style Text Editor.
 
 ## Libraries and Preliminaries
 
-* You may feel the need of check <code>termios.h></code> to understand raw mode
+* You may feel the need of checking <code>termios.h></code> to understand raw mode
 
 * Please check the ASCII Table and its arithmetic before start reading the code
 
