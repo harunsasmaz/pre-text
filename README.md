@@ -8,7 +8,7 @@ A Vim-style Text Editor.
 
 * Please check the ASCII Table and its arithmetic before start reading the code
 
-* Pretext uses VT100 Escape Sequence, Please read the guide [here](https://vt100.net/docs/vt100-ug/chapter3.html)
+* Pretext uses <b>VT100 Escape Sequence</b>, Please read the guide [here](https://vt100.net/docs/vt100-ug/chapter3.html)
 
   * VT100 sequence enables cursor positioning, screen positioning, set/reset mode and many more functionalities in Pretext editor, you will encounter with this sequence frequently.
 
