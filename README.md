@@ -47,6 +47,12 @@ Or with an existing file:
 
 > If you are not familiar with incremental search, visit [here](https://en.wikipedia.org/wiki/Incremental_search#:~:text=In%20computing%2C%20incremental%20search%2C%20incremental,immediately%20presented%20to%20the%20user.)
 
+<b>Comment</b>
+
+> Pretext provides both single-line and multi-line comments.
+
+> As usual, you can use <code>"//"</code> for single-line comments and <code>"/*" + "*/"</code> for multi-line comments.
+
 <b>Syntax Highlight</b>
 
 > Pretext supports a basic syntax highlighting in .c, .h and .cpp files. You can notice that strings, numbers and keywords are highlighted in a really simple manner.
