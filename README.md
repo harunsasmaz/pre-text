@@ -51,7 +51,7 @@ Or with an existing file:
 
 > Pretext provides both single-line and multi-line comments.
 
-> As usual, you can use <code>"//"</code> for single-line comments and <code>"/*" + "*/"</code> for multi-line comments.
+> As usual, you can use <code>"//"</code> for single-line comments and <code>"/\*" + "\*/"</code> for multi-line comments.
 
 <b>Syntax Highlight</b>
 
